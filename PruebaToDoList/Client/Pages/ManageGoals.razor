@@ -94,11 +94,14 @@
     private Goal? selectedGoal;
 
     protected override async Task OnInitializedAsync()
+
     {
         var result = await api.Get<IEnumerable<Goal>>("api/Goals");
         if (result.Error)
+
         {
             await DialogService.Alert("Error al extraer las metas", "Error");
+
         }
         goals.AddRange(result.Response!);
     }
@@ -117,7 +120,7 @@
         <button class="btn btn-primary" type="submit">Aceptar</button>
         <button class="btn btn-primary" @onclick="() => ds.Close(false)">Cancelar</button>
     </EditForm>
-    );
+        );
         if (result != true)
         {
             return;
@@ -161,7 +164,7 @@
         <button class="btn btn-primary" type="submit">Aceptar</button>
         <button class="btn btn-primary" @onclick="() => ds.Close(false)">Cancelar</button>
     </EditForm>
-        );
+    );
         if (result != true)
         {
             return;
@@ -219,7 +222,7 @@
             <InputText class="form-control" @bind-Value="formName.Name" />
             <ValidationMessage class="text-danger" For="()=> formName.Name" />
         </div>
-        <button class="btn btn-primary" type="submit">Aceptar</button>
+    <button class="btn btn-primary" type="submit">Aceptar</button>
         <button class="btn btn-primary" @onclick="() => ds.Close(false)">Cancelar</button>
     </EditForm>
         );
@@ -234,11 +237,21 @@
             return;
         }
 
-        selectedGoal.Tasks.Add(new TaskGoal()
+        var task = new TaskGoal()
                 {
+                    GoalId = selectedGoal.Id,
                     Date = DateTime.Now,
-                    Name = formName.Name,
-                });
+                Name = formName.Name,
+                };
+
+        var resultapi = await api.Post<TaskGoal>("api/Tasks", task);
+        if (resultapi.Error)
+        {
+            await DialogService.Alert("Error al agregar Tarea", "Error");
+            return;
+        }
+        
+        selectedGoal.Tasks.Add(resultapi.Response!);
         StateHasChanged();
         await grid.Reload();
 
@@ -283,6 +296,12 @@
         }
 
         task.Name = formName.Name;
+        var resultapi = await api.Put<TaskGoal>("api/Tasks", task);
+        if (resultapi.Error)
+        {
+            await DialogService.Alert("Error al editar Tarea", "Error");
+            return;
+        }
         await grid.Reload();
     }
 
@@ -302,8 +321,15 @@
         {
             return;
         }
+        var resultapi = await api.Delete($"api/Tasks/{task.Id}");
+        if (resultapi.Error)
+        {
+            await DialogService.Alert("Error al eliminar Tarea", "Error");
+            return;
+        }
         selectedGoal!.Tasks.Remove(task);
         StateHasChanged();
+        await grid.Reload();
     }
 
     private async void CompleteTask()
@@ -319,12 +345,24 @@
         }
 
         task.Estatus = true;
+        var resultapi = await api.Put<TaskGoal>("api/Tasks", task);
+        if (resultapi.Error)
+        {
+            await DialogService.Alert("Error al editar Tarea", "Error");
+            return;
+        }
         StateHasChanged();
     }
 
     private async void SetImportant(TaskGoal task)
     {
         task.Important = !task.Important;
+        var resultapi = await api.Put<TaskGoal>("api/Tasks", task);
+        if (resultapi.Error)
+        {
+            await DialogService.Alert("Error al editar Tarea", "Error");
+            return;
+        }
     }
     private bool ValidDuplicidadTask(string name, int id)
     {

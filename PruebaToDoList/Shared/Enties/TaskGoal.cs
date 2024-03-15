@@ -9,6 +9,7 @@ namespace PruebaToDoList.Shared.Enties
 {
     public class TaskGoal
     {
+        [Key]
         public int Id { get; set; }
         public int GoalId { get; set; }
         [Required]

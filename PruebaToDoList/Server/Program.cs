@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.EntityFrameworkCore;
+using PruebaToDoList.Server.DataBase;
 
 namespace PruebaToDoList
 {
@@ -12,6 +14,9 @@ namespace PruebaToDoList
 
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
+
+            builder.Services.AddDbContext<DataContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("default")));
 
             var app = builder.Build();
 

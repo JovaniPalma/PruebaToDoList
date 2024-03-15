@@ -6,7 +6,7 @@ using PruebaToDoList.Shared.Enties;
 namespace PruebaToDoList.Server.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class GoalsController : Controller
     {
         private readonly DataContext context;
@@ -47,9 +47,13 @@ namespace PruebaToDoList.Server.Controllers
             return Ok(goal);
         }
 
-        [HttpDelete]
-        public async Task<ActionResult<Goal>> DeleteGoals(Goal goal)
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult<Goal>> DeleteGoals(int id)
         {
+            Goal goal = new()
+            {
+                Id = id
+            };
             context.Goals.Remove(goal);
             await context.SaveChangesAsync();
             return Ok(goal);

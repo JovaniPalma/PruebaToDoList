@@ -1,12 +1,14 @@
 ﻿@page "/ManageGoals"
+@using PruebaToDoList.Client.Helpers
 @using PruebaToDoList.Client.Moldes
 @inject DialogService DialogService
+@inject ConnectionApi api
 
 <h3>ManageGoals</h3>
 
 <RadzenRow>
     <RadzenColumn Size="3">
-        <RadzenButton Click="NewMeta" class="mb-3">
+        <RadzenButton Click="NewGoal" class="mb-3">
             <span class="oi oi-home" aria-hidden="true"></span> Nueva meta
         </RadzenButton>
         <div>
@@ -91,12 +93,17 @@
     private List<Goal> goals = new();
     private Goal? selectedGoal;
 
-    protected override void OnParametersSet()
+    protected override async Task OnInitializedAsync()
     {
-        base.OnParametersSet();
+        var result = await api.Get<IEnumerable<Goal>>("api/Goals");
+        if (result.Error)
+        {
+            await DialogService.Alert("Error al extraer las metas", "Error");
+        }
+        goals.AddRange(result.Response!);
     }
 
-    private async void NewMeta()
+    private async void NewGoal()
     {
         var formName = new FormName();
         var result = await DialogService.OpenAsync("Nueva Meta", ds =>
@@ -110,7 +117,7 @@
         <button class="btn btn-primary" type="submit">Aceptar</button>
         <button class="btn btn-primary" @onclick="() => ds.Close(false)">Cancelar</button>
     </EditForm>
-        );
+    );
         if (result != true)
         {
             return;
@@ -122,12 +129,19 @@
             return;
         }
 
-        goals.Add(new Goal()
+        var goal = new Goal()
                 {
-                    Id = 0,
                     Name = formName.Name,
                     Date = DateTime.Now
-                });
+                };
+        var resultapi = await api.Post<Goal>("api/Goals", goal);
+        if (resultapi.Error)
+        {
+            await DialogService.Alert("Error al agregar meta", "Error");
+            return;
+        }
+        goals.Add(resultapi.Response!);
+        StateHasChanged();
     }
 
     private async void EditGoal(Goal goal)
@@ -158,8 +172,14 @@
             await DialogService.Alert("La meta ya existe", "Duplicado");
             return;
         }
-
         goal.Name = formName.Name;
+
+        var resultapi = await api.Put<Goal>("api/Goals", goal);
+        if (resultapi.Error)
+        {
+            await DialogService.Alert("Error al editar meta", "Error");
+            return;
+        }
     }
 
     private async void DeleteGoal(Goal goal)
@@ -167,6 +187,12 @@
         var result = await DialogService.Confirm($"Desea eliminar la meta {goal.Name}", "Esta Seguro");
         if (result != true)
         {
+            return;
+        }
+        var resultapi = await api.Delete($"api/Goals/{goal.Id}");
+        if (resultapi.Error)
+        {
+            await DialogService.Alert("Error al eliminar meta", "Error");
             return;
         }
         goals.Remove(goal);

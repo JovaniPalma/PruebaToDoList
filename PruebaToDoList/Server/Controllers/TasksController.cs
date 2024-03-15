@@ -18,7 +18,7 @@ namespace PruebaToDoList.Server.Controllers
         [HttpPost]
         public async Task<ActionResult<TaskGoal>> PostGoals(TaskGoal task)
         {
-            task.Date = DateTime.Now;
+            task.Date = DateTime.Now.Date;
             context.Tasks.Add(task);
             await context.SaveChangesAsync();
             return Ok(task);

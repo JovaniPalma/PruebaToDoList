@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34701.34
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PruebaToDoList.Server", "PruebaToDoList\Server\PruebaToDoList.Server.csproj", "{9EE422A2-CEEA-4857-B722-A515D04BBAEF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PruebaToDoList.Server", "PruebaToDoList\Server\PruebaToDoList.Server.csproj", "{9EE422A2-CEEA-4857-B722-A515D04BBAEF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PruebaToDoList.Client", "PruebaToDoList\Client\PruebaToDoList.Client.csproj", "{1636ACDD-BA77-46BF-8432-6178B1F88018}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PruebaToDoList.Client", "PruebaToDoList\Client\PruebaToDoList.Client.csproj", "{1636ACDD-BA77-46BF-8432-6178B1F88018}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PruebaToDoList.Shared", "PruebaToDoList\Shared\PruebaToDoList.Shared.csproj", "{94AD6C8C-5F59-4803-BD26-25569D357317}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PruebaToDoList.Shared", "PruebaToDoList\Shared\PruebaToDoList.Shared.csproj", "{94AD6C8C-5F59-4803-BD26-25569D357317}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

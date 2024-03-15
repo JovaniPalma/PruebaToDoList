@@ -1,10 +1,12 @@
 ﻿@page "/ManageGoals"
+@using PruebaToDoList.Client.Moldes
+@inject DialogService DialogService
 
 <h3>ManageGoals</h3>
 
 <RadzenRow>
     <RadzenColumn Size="3">
-        <RadzenButton>
+        <RadzenButton Click="NewMeta" class="mb-3">
             <span class="oi oi-home" aria-hidden="true"></span> Nueva meta
         </RadzenButton>
         <div>
@@ -15,10 +17,10 @@
                             <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
                                 <label>@context.Name</label>
                                 <RadzenStack Orientation="Orientation.Horizontal">
-                                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small">
+                                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="() => EditGoal(((Goal)context))">
                                         <span class="oi oi-pencil"></span>
                                     </RadzenButton>
-                                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small">
+                                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" Click="() => DeleteGoal(((Goal)context))">
                                         <span class="oi oi-trash"></span>
                                     </RadzenButton>
                                 </RadzenStack>
@@ -46,21 +48,104 @@
     protected override void OnParametersSet()
     {
         goals.Add(new Goal
-            {
-                Id = 1,
-                Date = DateTime.Now,
-                Name = "Meta 1",
-                NumCompleteTask = 1,
-                NumTask = 2
-            });
+                {
+                    Id = 1,
+                    Date = DateTime.Now,
+                    Name = "Meta 1",
+                    NumCompleteTask = 1,
+                    NumTask = 2
+                });
         goals.Add(new Goal
-            {
-                Id = 2,
-                Date = DateTime.Now,
-                Name = "Meta 2",
-                NumCompleteTask = 1,
-                NumTask = 4
-            });
+                {
+                    Id = 2,
+                    Date = DateTime.Now,
+                    Name = "Meta 2",
+                    NumCompleteTask = 1,
+                    NumTask = 4
+                });
         base.OnParametersSet();
+    }
+
+    private async void NewMeta()
+    {
+        var formName = new FormName();
+        var result = await DialogService.OpenAsync("Nueva Meta", ds =>
+    @<EditForm Model="formName" OnValidSubmit="() => ds.Close(true)">
+        <DataAnnotationsValidator />
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <InputText class="form-control" @bind-Value="formName.Name" />
+            <ValidationMessage class="text-danger" For="()=> formName.Name" />
+        </div>
+        <button class="btn btn-primary" type="submit">Aceptar</button>
+        <button class="btn btn-primary" @onclick="() => ds.Close(false)">Cancelar</button>
+    </EditForm>
+    );
+        if (result != true)
+        {
+            return;
+        }
+
+        if (ValidDuplicidad(formName.Name, 0))
+        {
+            await DialogService.Alert("La meta ya existe", "Duplicado");
+            return;
+        }
+
+        goals.Add(new Goal()
+                {
+                    Id = 0,
+                    Name = formName.Name,
+                    Date = DateTime.Now
+                });
+    }
+
+    private async void EditGoal(Goal goal)
+    {
+        var formName = new FormName()
+            {
+                Name = goal.Name
+            };
+        var result = await DialogService.OpenAsync("Editar Meta", ds =>
+    @<EditForm Model="formName" OnValidSubmit="() => ds.Close(true)">
+        <DataAnnotationsValidator />
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <InputText class="form-control" @bind-Value="formName.Name" />
+            <ValidationMessage class="text-danger" For="()=> formName.Name" />
+        </div>
+        <button class="btn btn-primary" type="submit">Aceptar</button>
+        <button class="btn btn-primary" @onclick="() => ds.Close(false)">Cancelar</button>
+    </EditForm>
+    );
+        if (result != true)
+        {
+            return;
+        }
+
+        if (ValidDuplicidad(formName.Name, 0))
+        {
+            await DialogService.Alert("La meta ya existe", "Duplicado");
+            return;
+        }
+
+        goal.Name = formName.Name;
+    }
+
+    private async void DeleteGoal(Goal goal)
+    {
+        var result = await DialogService.Confirm($"Desea eliminar la meta {goal.Name}", "Esta Seguro");
+        if (result != true)
+        {
+            return;
+        }
+        goals.Remove(goal);
+        StateHasChanged();
+    }
+
+    private bool ValidDuplicidad(string name, int id)
+    {
+        return goals.Where(x => x.Id != id).Any(x => x.Name == name);
+
     }
 }

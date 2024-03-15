@@ -1,0 +1,66 @@
+﻿@page "/ManageGoals"
+
+<h3>ManageGoals</h3>
+
+<RadzenRow>
+    <RadzenColumn Size="3">
+        <RadzenButton>
+            <span class="oi oi-home" aria-hidden="true"></span> Nueva meta
+        </RadzenButton>
+        <div>
+            <RadzenListBox @bind-Value=@selectedGoal Data=@goals Style="width: 100%;">
+                <Template>
+                    <RadzenCard Variant="Variant.Filled">
+                        <RadzenStack Style="width: 100%;">
+                            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+                                <label>@context.Name</label>
+                                <RadzenStack Orientation="Orientation.Horizontal">
+                                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small">
+                                        <span class="oi oi-pencil"></span>
+                                    </RadzenButton>
+                                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small">
+                                        <span class="oi oi-trash"></span>
+                                    </RadzenButton>
+                                </RadzenStack>
+                            </RadzenStack>
+                            <label>Fecha de cracion @context.Date.ToString("d")</label>
+                            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+                                <label>Tareas completadas @context.NumCompleteTask/@context.NumTask</label>
+                                <label>@context.Progress.ToString("p0")</label>
+                            </RadzenStack>
+                            <progress max="1" value="@context.Progress" style="width:100%" />
+                        </RadzenStack>
+                    </RadzenCard>
+                </Template>
+            </RadzenListBox>
+        </div>
+    </RadzenColumn>
+    <RadzenColumn>
+    </RadzenColumn>
+</RadzenRow>
+
+@code {
+    private List<Goal> goals = new();
+    private Goal? selectedGoal;
+
+    protected override void OnParametersSet()
+    {
+        goals.Add(new Goal
+            {
+                Id = 1,
+                Date = DateTime.Now,
+                Name = "Meta 1",
+                NumCompleteTask = 1,
+                NumTask = 2
+            });
+        goals.Add(new Goal
+            {
+                Id = 2,
+                Date = DateTime.Now,
+                Name = "Meta 2",
+                NumCompleteTask = 1,
+                NumTask = 4
+            });
+        base.OnParametersSet();
+    }
+}

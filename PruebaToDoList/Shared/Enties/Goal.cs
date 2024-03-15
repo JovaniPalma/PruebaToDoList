@@ -15,8 +15,14 @@ namespace PruebaToDoList.Shared.Enties
         [MaxLength(80)]
         public string Name { get; set; }
         public DateTime Date { get; set; }
-        public int NumTask { get; set; }
-        public int NumCompleteTask { get; set; }
+        public int NumTask
+        {
+            get => Tasks.Count;
+        }
+        public int NumCompleteTask
+        {
+            get => Tasks.Where(x=> x.Estatus).Count();
+        }
         public double Progress 
         {
             get
@@ -28,6 +34,6 @@ namespace PruebaToDoList.Shared.Enties
                 return (double)NumCompleteTask / NumTask;
             }
         }
-
+        public List<TaskGoal> Tasks { get; set; } = new List<TaskGoal>();
     }
 }

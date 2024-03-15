@@ -38,6 +38,52 @@
         </div>
     </RadzenColumn>
     <RadzenColumn>
+        @if (selectedGoal != null)
+        {
+            <RadzenStack>
+                <h3>@selectedGoal.Name</h3>
+                <RadzenStack Orientation="Orientation.Horizontal">
+                    <RadzenButton Size="ButtonSize.Small" Click="NewTask">
+                        <span class="oi oi-plus"></span> Nueva Tarea
+                    </RadzenButton>
+                    <RadzenButton Size="ButtonSize.Small" Click="CompleteTask">
+                        <span class="oi oi-circle-check"></span> Completar tarea
+                    </RadzenButton>
+                    <RadzenButton Size="ButtonSize.Small" Click="EditTask">
+                        <span class="oi oi-pencil"></span> Editar
+                    </RadzenButton>
+                    <RadzenButton Size="ButtonSize.Small" Click="DeleteTask">
+                        <span class="oi oi-trash"></span> Eliminar
+                    </RadzenButton>
+                </RadzenStack>
+                <RadzenDataGrid @ref="grid" AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Simple" AllowSorting="true" PageSize="5" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+                                Data="@selectedGoal.Tasks" TItem="TaskGoal" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.And" SelectionMode="DataGridSelectionMode.Single" @bind-Value=@selectedTask>
+                    <Columns>
+                        <RadzenDataGridColumn TItem="TaskGoal" Property="Important" Title="Importante" Width="160px">
+                            <Template Context="data">
+                                <span @onclick="()=>SetImportant(data)" class="oi oi-star" style="color:@(data.Important?"gold":"gray")">
+
+                                </span>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="TaskGoal" Property="Name" Title="Tarea" Width="160px" />
+                        <RadzenDataGridColumn TItem="TaskGoal" Property="Date" Title="Fecha" Width="200px" />
+                        <RadzenDataGridColumn TItem="TaskGoal" Property="Estatus" Title="Estado" Width="300px">
+                            <Template Context="data">
+                                @if (data.Estatus)
+                                {
+                                    <label class="text-success">Completada</label>
+                                }
+                                else
+                                {
+                                    <label>Abierta</label>
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </RadzenStack>
+        }
     </RadzenColumn>
 </RadzenRow>
 
@@ -52,16 +98,14 @@
                     Id = 1,
                     Date = DateTime.Now,
                     Name = "Meta 1",
-                    NumCompleteTask = 1,
-                    NumTask = 2
+                   
                 });
         goals.Add(new Goal
                 {
                     Id = 2,
                     Date = DateTime.Now,
                     Name = "Meta 2",
-                    NumCompleteTask = 1,
-                    NumTask = 4
+                    
                 });
         base.OnParametersSet();
     }
@@ -80,7 +124,7 @@
         <button class="btn btn-primary" type="submit">Aceptar</button>
         <button class="btn btn-primary" @onclick="() => ds.Close(false)">Cancelar</button>
     </EditForm>
-    );
+        );
         if (result != true)
         {
             return;
@@ -103,9 +147,9 @@
     private async void EditGoal(Goal goal)
     {
         var formName = new FormName()
-            {
-                Name = goal.Name
-            };
+                {
+                    Name = goal.Name
+                };
         var result = await DialogService.OpenAsync("Editar Meta", ds =>
     @<EditForm Model="formName" OnValidSubmit="() => ds.Close(true)">
         <DataAnnotationsValidator />
@@ -117,7 +161,7 @@
         <button class="btn btn-primary" type="submit">Aceptar</button>
         <button class="btn btn-primary" @onclick="() => ds.Close(false)">Cancelar</button>
     </EditForm>
-    );
+        );
         if (result != true)
         {
             return;
@@ -147,5 +191,135 @@
     {
         return goals.Where(x => x.Id != id).Any(x => x.Name == name);
 
+    }
+
+    IList<TaskGoal>? selectedTask;
+    RadzenDataGrid<TaskGoal> grid;
+    private async void NewTask()
+    {
+        ArgumentNullException.ThrowIfNull(selectedGoal);
+        var formName = new FormName();
+        var result = await DialogService.OpenAsync("Nueva Tarea", ds =>
+    @<EditForm Model="formName" OnValidSubmit="() => ds.Close(true)">
+        <DataAnnotationsValidator />
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <InputText class="form-control" @bind-Value="formName.Name" />
+            <ValidationMessage class="text-danger" For="()=> formName.Name" />
+        </div>
+        <button class="btn btn-primary" type="submit">Aceptar</button>
+        <button class="btn btn-primary" @onclick="() => ds.Close(false)">Cancelar</button>
+    </EditForm>
+        );
+        if (result != true)
+        {
+            return;
+        }
+
+        if (ValidDuplicidadTask(formName.Name, 0))
+        {
+            await DialogService.Alert("La tarea ya existe", "Duplicado");
+            return;
+        }
+
+        selectedGoal.Tasks.Add(new TaskGoal()
+                {
+                    Date = DateTime.Now,
+                    Name = formName.Name,
+                });
+        StateHasChanged();
+        await grid.Reload();
+
+    }
+    private async void EditTask()
+    {
+        ArgumentNullException.ThrowIfNull(selectedGoal);
+        if (selectedTask is null)
+        {
+            return;
+        }
+        var task = selectedTask.FirstOrDefault();
+        if (task is null)
+        {
+            return;
+        }
+        var formName = new FormName()
+                {
+                    Name = task.Name
+                };
+        var result = await DialogService.OpenAsync("Editar Tarea", ds =>
+    @<EditForm Model="formName" OnValidSubmit="() => ds.Close(true)">
+        <DataAnnotationsValidator />
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <InputText class="form-control" @bind-Value="formName.Name" />
+            <ValidationMessage class="text-danger" For="()=> formName.Name" />
+        </div>
+        <button class="btn btn-primary" type="submit">Aceptar</button>
+        <button class="btn btn-primary" @onclick="() => ds.Close(false)">Cancelar</button>
+    </EditForm>
+    );
+        if (result != true)
+        {
+            return;
+        }
+
+        if (ValidDuplicidadTask(formName.Name, 0))
+        {
+            await DialogService.Alert("La tarea ya existe", "Duplicado");
+            return;
+        }
+
+        task.Name = formName.Name;
+        await grid.Reload();
+    }
+
+    private async void DeleteTask()
+    {
+        if (selectedTask is null)
+        {
+            return;
+        }
+        var task = selectedTask.FirstOrDefault();
+        if (task is null)
+        {
+            return;
+        }
+        var result = await DialogService.Confirm($"Desea eliminar la meta {task.Name}", "Esta Seguro");
+        if (result != true)
+        {
+            return;
+        }
+        selectedGoal!.Tasks.Remove(task);
+        StateHasChanged();
+    }
+
+    private async void CompleteTask()
+    {
+        if (selectedTask is null)
+        {
+            return;
+        }
+        var task = selectedTask.FirstOrDefault();
+        if (task is null)
+        {
+            return;
+        }
+
+        task.Estatus = true;
+        StateHasChanged();
+    }
+
+    private async void SetImportant(TaskGoal task)
+    {
+        task.Important = !task.Important;
+    }
+    private bool ValidDuplicidadTask(string name, int id)
+    {
+        if (selectedGoal!.Tasks is null)
+        {
+            return false;
+        }
+        return selectedGoal.Tasks.Where(x => x.Id != id).Any(x => x.Name == name);
     }
 }

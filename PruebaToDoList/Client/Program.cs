@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using PruebaToDoList.Client;
+using Radzen;
 
 namespace PruebaToDoList.Client
 {
@@ -13,6 +14,7 @@ namespace PruebaToDoList.Client
             builder.RootComponents.Add<HeadOutlet>("head::after");
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            builder.Services.AddRadzenComponents();
 
             await builder.Build().RunAsync();
         }
